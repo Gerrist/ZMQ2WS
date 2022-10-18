@@ -23,7 +23,7 @@ fun main() {
     val url = System.getenv("URL")
     val topics = System.getenv("TOPICS")
 
-    if(url == null || topics == null) {
+    if (url == null || topics == null) {
         println("Please set the URL and TOPICS environment variables")
         return
     }
@@ -43,14 +43,17 @@ fun main() {
 
         while (!Thread.currentThread().isInterrupted) {
             val reply = socket.recv(0)
-            if(queue.isEmpty()){
+            if (queue.isEmpty()) {
                 queue.add(reply.toString(StandardCharsets.UTF_8))
             } else {
                 val topic = queue[0];
                 sessions.forEach { session ->
                     runBlocking {
-                        if(session.isActive){
-                            session.send(JSONObject().put("topic", topic).put("message", reply.toString(StandardCharsets.UTF_8)).toString())
+                        if (session.isActive) {
+                            session.send(
+                                JSONObject().put("topic", topic).put("message", reply.toString(StandardCharsets.UTF_8))
+                                    .toString()
+                            )
                         } else {
                             sessions.remove(session)
                         }
