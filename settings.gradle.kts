@@ -1,0 +1,1 @@
+rootProject.name = "gerr.ist.zmq2ws"
