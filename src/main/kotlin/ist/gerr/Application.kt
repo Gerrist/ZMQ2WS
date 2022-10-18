@@ -31,6 +31,16 @@ fun main() {
     val sessions = ConcurrentSet<WebSocketServerSession>()
     val queue = mutableListOf<String>()
 
+    Timer().schedule(object : TimerTask() {
+        override fun run() {
+            sessions.forEach { session ->
+                if (!session.isActive) {
+                    sessions.remove(session)
+                }
+            }
+        }
+    }, 1000, 1000)
+
     Thread {
         val context = ZMQ.context(1)
         val socket = context.socket(SocketType.SUB)
@@ -76,6 +86,7 @@ fun main() {
 
             webSocket("/") { // websocketSession
                 sessions.add(this)
+                println("New session. Total sessions: ${sessions.size}")
             }
         }
     }.start(wait = true)
