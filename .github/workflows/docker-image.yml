@@ -8,7 +8,7 @@ on:
     
 env:
   REGISTRY: registry.digitalocean.com/liveov
-  IMAGE_NAME: zmq2ws
+  IMAGE_NAME: zmq2js
   
 jobs:
   build:
