@@ -15,10 +15,15 @@ import org.zeromq.SocketType
 import org.zeromq.ZMQ
 import java.nio.charset.StandardCharsets
 import java.time.Duration
+import java.util.zip.GZIPInputStream
+
+fun gunzip(content: ByteArray): String =
+    GZIPInputStream(content.inputStream()).bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
 
 fun main() {
     val url = System.getenv("URL")
     val topics = System.getenv("TOPICS")
+    val gunzipMessages = System.getenv("GUNZIP_MESSAGES")?.toBoolean() ?: false
 
     if (url == null || topics == null) {
         println("Please set the URL and TOPICS environment variables")
@@ -39,7 +44,7 @@ fun main() {
         }
 
         while (!Thread.currentThread().isInterrupted) {
-            val reply = socket.recv(0)
+            var reply = socket.recv(0)
             if (queue.isEmpty()) {
                 queue.add(reply.toString(StandardCharsets.UTF_8))
             } else {
@@ -47,10 +52,18 @@ fun main() {
                 sessions.forEach { session ->
                     runBlocking {
                         if (session.isActive) {
-                            session.send(
-                                JSONObject().put("topic", topic).put("message", reply.toString(StandardCharsets.UTF_8))
-                                    .toString()
-                            )
+                            try {
+                                if (gunzipMessages) {
+                                    reply = gunzip(reply).toByteArray()
+                                }
+                                session.send(
+                                    JSONObject().put("topic", topic)
+                                        .put("message", reply.toString(StandardCharsets.UTF_8))
+                                        .toString()
+                                )
+                            } catch (e: Exception) {
+                                println("Error sending message to client: ${e.message}")
+                            }
                         }
                     }
                 }
