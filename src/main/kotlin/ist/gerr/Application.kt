@@ -15,9 +15,6 @@ import org.zeromq.SocketType
 import org.zeromq.ZMQ
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.LinkedHashSet
 
 fun main() {
     val url = System.getenv("URL")
@@ -30,17 +27,6 @@ fun main() {
 
     val sessions = ConcurrentSet<WebSocketServerSession>()
     val queue = mutableListOf<String>()
-
-    Timer().schedule(object : TimerTask() {
-        override fun run() {
-            sessions.forEach { session ->
-                if (!session.isActive) {
-                    sessions.remove(session)
-                    println("Removed inactive session. Total sessions: ${sessions.size}")
-                }
-            }
-        }
-    }, 1000, 1000)
 
     Thread {
         val context = ZMQ.context(1)
@@ -65,9 +51,6 @@ fun main() {
                                 JSONObject().put("topic", topic).put("message", reply.toString(StandardCharsets.UTF_8))
                                     .toString()
                             )
-                        } else {
-                            sessions.remove(session)
-                            println("Removed inactive session. Total sessions: ${sessions.size}")
                         }
                     }
                 }
@@ -85,10 +68,16 @@ fun main() {
         }
 
         routing {
-
             webSocket("/") { // websocketSession
                 sessions.add(this)
-                println("New session. Total sessions: ${sessions.size}")
+                println("New session: ${this.hashCode()}")
+                try {
+                    while (true) {
+                    }
+                } catch (e: Exception) {
+                    println("Session ${this.hashCode()} closed")
+                    sessions.remove(this)
+                }
             }
         }
     }.start(wait = true)
