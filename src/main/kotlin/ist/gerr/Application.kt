@@ -36,6 +36,7 @@ fun main() {
             sessions.forEach { session ->
                 if (!session.isActive) {
                     sessions.remove(session)
+                    println("Removed inactive session. Total sessions: ${sessions.size}")
                 }
             }
         }
@@ -66,6 +67,7 @@ fun main() {
                             )
                         } else {
                             sessions.remove(session)
+                            println("Removed inactive session. Total sessions: ${sessions.size}")
                         }
                     }
                 }
