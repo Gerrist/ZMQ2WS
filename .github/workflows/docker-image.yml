@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
     
 env:
-  REGISTRY: registry.digitalocean.com/zmq2ws
+  REGISTRY: registry.digitalocean.com/liveov
   IMAGE_NAME: zmq2ws
   
 jobs:
